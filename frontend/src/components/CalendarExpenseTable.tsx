@@ -193,13 +193,14 @@ export function CalendarExpenseTable({
               description: editingExpense.description,
               category: editingExpense.category,
               date: formatDate(new Date(editingExpense.date)),
-            }}
-            onSubmit={handleUpdate}
-            onCancel={() => {
-              setIsEditModalOpen(false);
-              setEditingExpense(null);
-            }}
-            submitLabel="Update Expense"
+              payer_name: editingExpense.payer_name || "",
+          }}
+          onSubmit={handleUpdate}
+          onCancel={() => {
+            setIsEditModalOpen(false);
+            setEditingExpense(null);
+          }}
+          submitLabel="Update Expense"
           />
         )}
       </Modal>

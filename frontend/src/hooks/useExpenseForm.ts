@@ -2,7 +2,7 @@
  * Custom hook for managing expense form state and validation
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ExpenseFormData } from "../types";
 import { formatDate } from "../utils/expenseUtils";
 
@@ -19,6 +19,19 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
     date: initialData?.date || formatDate(new Date()),
     payer_name: initialData?.payer_name || "",
   });
+
+  // If initialData changes (e.g., opening the edit form with new data), update form state.
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        amount: initialData.amount || "",
+        description: initialData.description || "",
+        category: initialData.category || "",
+        date: initialData.date || formatDate(new Date()),
+        payer_name: initialData.payer_name || "",
+      });
+    }
+  }, [initialData]);
 
   const [errors, setErrors] = useState<Partial<ExpenseFormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);

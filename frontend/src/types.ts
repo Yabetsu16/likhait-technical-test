@@ -7,6 +7,8 @@ export interface Expense {
   amount: number;
   description: string;
   category: string;
+  // payer name included in API responses; optional in case older records lack it
+  payer_name?: string;
   date: string;
   created_at: string;
   updated_at: string;
