@@ -56,8 +56,9 @@ services:
       sh -c "
         bundle exec rails db:migrate &&
         bundle exec rails db:seed &&
+        rm -f tmp/pids/server.pid || true &&
         bundle exec rails server -b 0.0.0.0
-      "
+      " 
     # Gems are installed at image build time; avoid installing at container start for reliability and speed
     # Gems are installed at image build time; avoid installing at container start for reliability and speed
     networks:
