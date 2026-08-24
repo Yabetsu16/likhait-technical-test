@@ -8,9 +8,10 @@ FROM ruby:$RUBY_VERSION-slim
 WORKDIR /rails
 
 # Ensure Bundler and gem paths are consistent between build and runtime
-ENV BUNDLE_PATH=/rails/vendor/bundle
-ENV GEM_HOME=/rails/vendor/bundle
-ENV PATH=/rails/vendor/bundle/ruby/3.3.0/bin:/rails/vendor/bundle/bin:/usr/local/bin:$PATH
+ENV BUNDLE_APP_CONFIG=/usr/local/bundle
+ENV BUNDLE_PATH=/usr/local/bundle
+ENV GEM_HOME=/usr/local/bundle
+ENV PATH=/usr/local/bundle/ruby/3.3.0/bin:/usr/local/bundle/bin:/usr/local/bin:$PATH
 
 # Install base packages including yaml headers for psych gem
 RUN apt-get update -qq && \
@@ -25,8 +26,10 @@ COPY Gemfile Gemfile.lock ./
 # Update Gemfile.lock for Linux platform and install gems
 RUN bundle lock --add-platform x86_64-linux && \
     bundle config set --local deployment 'false' && \
+    # Remove any stale bundle config that may point to vendor/bundle
+    if [ -f /usr/local/bundle/config ]; then rm -f /usr/local/bundle/config; fi && \
     # Install gems into the image-wide directory so a docker volume can be mounted there
-    bundle config set --local path '/rails/vendor/bundle' && \
+    bundle config set --local path '/usr/local/bundle' && \
     bundle install --jobs 4 --retry 3
 
 # Copy application code
