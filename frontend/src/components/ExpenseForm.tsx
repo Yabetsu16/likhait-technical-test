@@ -9,6 +9,7 @@ import { TextField, SelectBox, Button } from "../vibes";
 import { useExpenseForm } from "../hooks/useExpenseForm";
 import { useEffect, useState } from "react";
 import { fetchCategories, createCategory } from "../services/api";
+import CategoriesManager from "./CategoriesManager";
 
 interface ExpenseFormProps {
   initialData?: Partial<ExpenseFormData>;
@@ -44,22 +45,36 @@ export function ExpenseForm({
   const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [isManageOpen, setIsManageOpen] = useState(false);
   const categoryOptions = (categories.length ? categories.map((c) => ({ value: c.name, label: c.name })) : EXPENSE_CATEGORIES.map((category) => ({ value: category, label: category })))
 
-  useEffect(() => {
-    let mounted = true;
+  const refreshCategories = async () => {
     setLoadingCategories(true);
-    fetchCategories()
-      .then((cats) => {
+    try {
+      const cats = await fetchCategories();
+      setCategories(cats);
+    } catch (err) {
+      // ignore and keep hardcoded categories as fallback
+      console.error("Failed to load categories:", err);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
+
+  useEffect(() => {
+    // initial load
+    let mounted = true;
+    (async () => {
+      setLoadingCategories(true);
+      try {
+        const cats = await fetchCategories();
         if (mounted) setCategories(cats);
-      })
-      .catch((err) => {
-        // ignore and keep hardcoded categories as fallback
+      } catch (err) {
         console.error("Failed to load categories:", err);
-      })
-      .finally(() => {
+      } finally {
         if (mounted) setLoadingCategories(false);
-      });
+      }
+    })();
 
     return () => {
       mounted = false;
@@ -115,19 +130,37 @@ export function ExpenseForm({
         required
       />
 
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
-        <TextField
-          label="New category"
-          type="text"
-          placeholder="Add category"
-          value={newCategoryName}
-          onChange={(e) => setNewCategoryName(e.target.value)}
-          fullWidth
-        />
-        <Button type="button" variant="primary" onClick={handleAddCategory} disabled={!newCategoryName.trim()}>
-          Add
+      <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+            <TextField
+              label="New category"
+              type="text"
+              placeholder="Add category"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              fullWidth
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleAddCategory}
+              disabled={!newCategoryName.trim()}
+              style={{ marginBottom: '0.25rem' }}
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+
+        <Button type="button" variant="primary" fullWidth onClick={() => setIsManageOpen(true)}>
+          Manage
         </Button>
       </div>
+
+      <CategoriesManager isOpen={isManageOpen} onClose={() => { setIsManageOpen(false); refreshCategories(); }} onChange={refreshCategories} />
 
       <TextField
         label="Date"

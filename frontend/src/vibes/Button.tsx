@@ -17,8 +17,9 @@ export function Button({
   fullWidth = false,
   children,
   disabled,
+  style,
   ...props
-}: ButtonProps) {
+}: ButtonProps & { style?: React.CSSProperties }) {
   const getVariantStyles = () => {
     switch (variant) {
       case "primary":
@@ -74,8 +75,10 @@ export function Button({
     gap: "0.5rem",
   };
 
+  const mergedStyles: React.CSSProperties = { ...styles, ...(style || {}) };
+
   return (
-    <button style={styles} disabled={disabled} {...props}>
+    <button style={mergedStyles} disabled={disabled} {...props}>
       {children}
     </button>
   );
