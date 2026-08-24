@@ -17,6 +17,7 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
     description: initialData?.description || "",
     category: initialData?.category || "",
     date: initialData?.date || formatDate(new Date()),
+    payer_name: initialData?.payer_name || "",
   });
 
   const [errors, setErrors] = useState<Partial<ExpenseFormData>>({});
@@ -69,6 +70,7 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
         description: "",
         category: "",
         date: formatDate(new Date()),
+        payer_name: "",
       });
       setErrors({});
     } catch (error) {
@@ -84,6 +86,7 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
       description: initialData?.description || "",
       category: initialData?.category || "",
       date: initialData?.date || formatDate(new Date()),
+      payer_name: initialData?.payer_name || "",
     });
     setErrors({});
   };

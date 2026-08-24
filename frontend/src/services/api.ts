@@ -59,6 +59,8 @@ export async function createExpense(data: ExpenseFormData): Promise<Expense> {
     amount: data.amount,
     category_id: category?.id,
     date: data.date,
+    // include payer_name; trim and fallback to "Unknown" when empty to satisfy DB NOT NULL constraint
+    payer_name: ((data as any).payer_name || "").toString().trim() || "Unknown",
   };
 
   const response = await fetch(`${API_BASE_URL}/expenses`, {

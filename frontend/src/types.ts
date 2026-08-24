@@ -17,6 +17,8 @@ export interface ExpenseFormData {
   description: string;
   category: string;
   date: string;
+  // Optional payer name; backend requires payer_name to be non-null so include when available.
+  payer_name?: string;
 }
 
 export interface MonthlySummary {
