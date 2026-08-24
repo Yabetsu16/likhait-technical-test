@@ -7,24 +7,24 @@ FROM ruby:$RUBY_VERSION-slim
 # Rails app lives here
 WORKDIR /rails
 
-# Install base packages
+# Install base packages including yaml headers for psych gem
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential ca-certificates default-mysql-client default-libmysqlclient-dev git && \
+    apt-get install --no-install-recommends -y \
+      build-essential ca-certificates default-mysql-client default-libmysqlclient-dev git \
+      libyaml-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
 
-# Configure bundler and install gems with retry logic
-RUN bundle config set --local deployment 'false' && \
+# Update Gemfile.lock for Linux platform and install gems
+RUN bundle lock --add-platform x86_64-linux && \
+    bundle config set --local deployment 'false' && \
     bundle config set --local path 'vendor/bundle' && \
     bundle install --jobs 4 --retry 3
 
 # Copy application code
 COPY . .
-
-# Precompile bootsnap code for faster boot times
-RUN bundle exec bootsnap precompile --gemfile app/ lib/
 
 # Entrypoint prepares the database
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
