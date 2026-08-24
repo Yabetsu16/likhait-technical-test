@@ -1,6 +1,7 @@
 class Api::ExpensesController < ApplicationController
   def index
-    expenses = Expense.includes(:category).order(created_at: :desc)
+    # Order by expense date descending (fallback to created_at when date is NULL), so newly created expenses are placed according to their expense date.
+    expenses = Expense.includes(:category).order(Arel.sql("COALESCE(date, created_at) DESC, created_at DESC"))
 
     if params[:year].present? && params[:month].present?
       year = params[:year].to_i
