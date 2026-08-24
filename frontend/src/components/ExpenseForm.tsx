@@ -95,6 +95,8 @@ export function ExpenseForm({
     }
   };
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
       <TextField
@@ -170,6 +172,8 @@ export function ExpenseForm({
         error={errors.date}
         fullWidth
         required
+        // Prevent selecting future dates in the date picker
+        max={todayStr}
       />
 
       <TextField
