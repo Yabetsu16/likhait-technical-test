@@ -54,11 +54,11 @@ services:
       - backend_gems:/usr/local/bundle
     command: >
       sh -c "
-        bundle install &&
-        rails db:migrate &&
-        rails db:seed &&
-        rails server -b 0.0.0.0
+        bundle exec rails db:migrate &&
+        bundle exec rails db:seed &&
+        bundle exec rails server -b 0.0.0.0
       "
+    # Gems are installed at image build time; avoid installing at container start for reliability and speed
     networks:
       - expense_network
 
