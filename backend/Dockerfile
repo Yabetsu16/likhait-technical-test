@@ -26,8 +26,9 @@ RUN bundle lock --add-platform x86_64-linux && \
 # Copy application code
 COPY . .
 
-# Ensure entrypoint is executable inside the image
-RUN chmod +x /rails/bin/docker-entrypoint
+# Ensure entrypoint has Unix line endings and is executable inside the image
+RUN sed -i 's/\r$//' /rails/bin/docker-entrypoint && \
+    chmod +x /rails/bin/docker-entrypoint
 
 # Entrypoint prepares the database
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
