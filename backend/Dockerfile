@@ -7,6 +7,11 @@ FROM ruby:$RUBY_VERSION-slim
 # Rails app lives here
 WORKDIR /rails
 
+# Ensure Bundler and gem paths are consistent between build and runtime
+ENV BUNDLE_PATH=/usr/local/bundle
+ENV GEM_HOME=/usr/local/bundle
+ENV PATH=/usr/local/bundle/ruby/3.3.0/bin:/usr/local/bundle/bin:$PATH
+
 # Install base packages including yaml headers for psych gem
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
