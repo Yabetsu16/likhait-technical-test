@@ -7,6 +7,8 @@ import { ExpenseFormData } from "../types";
 import { EXPENSE_CATEGORIES } from "../constants/categories";
 import { TextField, SelectBox, Button } from "../vibes";
 import { useExpenseForm } from "../hooks/useExpenseForm";
+import { useEffect, useState } from "react";
+import { fetchCategories, createCategory } from "../services/api";
 
 interface ExpenseFormProps {
   initialData?: Partial<ExpenseFormData>;
@@ -39,10 +41,44 @@ export function ExpenseForm({
     marginTop: "0.5rem",
   };
 
-  const categoryOptions = EXPENSE_CATEGORIES.map((category) => ({
-    value: category,
-    label: category,
-  }));
+  const [categories, setCategories] = useState<Array<{ id: number; name: string }>>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const categoryOptions = (categories.length ? categories.map((c) => ({ value: c.name, label: c.name })) : EXPENSE_CATEGORIES.map((category) => ({ value: category, label: category })))
+
+  useEffect(() => {
+    let mounted = true;
+    setLoadingCategories(true);
+    fetchCategories()
+      .then((cats) => {
+        if (mounted) setCategories(cats);
+      })
+      .catch((err) => {
+        // ignore and keep hardcoded categories as fallback
+        console.error("Failed to load categories:", err);
+      })
+      .finally(() => {
+        if (mounted) setLoadingCategories(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleAddCategory = async () => {
+    const name = newCategoryName.trim();
+    if (!name) return;
+    try {
+      const created = await createCategory(name);
+      // refresh category list and select the new one
+      setCategories((prev) => [created, ...prev.filter((c) => c.id !== created.id)]);
+      handleChange("category", created.name);
+      setNewCategoryName("");
+    } catch (err: any) {
+      alert(err.message || "Failed to create category");
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
@@ -78,6 +114,20 @@ export function ExpenseForm({
         fullWidth
         required
       />
+
+      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+        <TextField
+          label="New category"
+          type="text"
+          placeholder="Add category"
+          value={newCategoryName}
+          onChange={(e) => setNewCategoryName(e.target.value)}
+          fullWidth
+        />
+        <Button type="button" variant="primary" onClick={handleAddCategory} disabled={!newCategoryName.trim()}>
+          Add
+        </Button>
+      </div>
 
       <TextField
         label="Date"
