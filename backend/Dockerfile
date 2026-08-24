@@ -10,8 +10,8 @@ WORKDIR /rails
 # Install base packages including yaml headers for psych gem
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
-      build-essential ca-certificates default-mysql-client default-libmysqlclient-dev git \
-      libyaml-dev && \
+    build-essential ca-certificates default-mysql-client default-libmysqlclient-dev git \
+    libyaml-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Install application gems
@@ -26,8 +26,12 @@ RUN bundle lock --add-platform x86_64-linux && \
 # Copy application code
 COPY . .
 
-# Ensure entrypoint has Unix line endings and is executable inside the image
-RUN sed -i 's/\r$//' /rails/bin/docker-entrypoint && \
+# Ensure entrypoint has Unix line endings, remove UTF-8 BOM if present, and make executable inside the image
+RUN if [ "$(od -An -t x1 -N 3 /rails/bin/docker-entrypoint | tr -d ' \n')" = "efbbbf" ]; then \
+      tail -c +4 /rails/bin/docker-entrypoint > /rails/bin/docker-entrypoint.nobom && \
+      mv /rails/bin/docker-entrypoint.nobom /rails/bin/docker-entrypoint; \
+    fi && \
+    sed -i 's/\r$//' /rails/bin/docker-entrypoint && \
     chmod +x /rails/bin/docker-entrypoint
 
 # Entrypoint prepares the database
