@@ -51,7 +51,7 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/rails
-      - backend_gems:/usr/local/bundle
+      - backend_gems:/rails/vendor/bundle
     command: >
       sh -c "
         bundle exec rails db:migrate &&
