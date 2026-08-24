@@ -20,7 +20,8 @@ COPY Gemfile Gemfile.lock ./
 # Update Gemfile.lock for Linux platform and install gems
 RUN bundle lock --add-platform x86_64-linux && \
     bundle config set --local deployment 'false' && \
-    bundle config set --local path 'vendor/bundle' && \
+    # Install gems into the image-wide directory so a docker volume can be mounted there
+    bundle config set --local path '/usr/local/bundle' && \
     bundle install --jobs 4 --retry 3
 
 # Copy application code
@@ -28,8 +29,8 @@ COPY . .
 
 # Ensure entrypoint has Unix line endings, remove UTF-8 BOM if present, and make executable inside the image
 RUN if [ "$(od -An -t x1 -N 3 /rails/bin/docker-entrypoint | tr -d ' \n')" = "efbbbf" ]; then \
-      tail -c +4 /rails/bin/docker-entrypoint > /rails/bin/docker-entrypoint.nobom && \
-      mv /rails/bin/docker-entrypoint.nobom /rails/bin/docker-entrypoint; \
+    tail -c +4 /rails/bin/docker-entrypoint > /rails/bin/docker-entrypoint.nobom && \
+    mv /rails/bin/docker-entrypoint.nobom /rails/bin/docker-entrypoint; \
     fi && \
     sed -i 's/\r$//' /rails/bin/docker-entrypoint && \
     chmod +x /rails/bin/docker-entrypoint
